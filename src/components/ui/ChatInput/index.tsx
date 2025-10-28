@@ -1,16 +1,47 @@
 import { useState, useRef, useEffect } from "react";
 import { Mic, Plus, Send } from "lucide-react";
 
-/** Lightweight recorder hook – no UI changes required */
+/** Events ChatInput can emit upward */
+// components/ui/ChatInput.tsx
+export type VoiceEvent =
+  | { type: "recording-start" }
+  | { type: "recording-progress"; elapsed: number }
+  | { type: "recording-pause"; elapsed: number }
+  | { type: "recording-resume"; elapsed: number }
+  | {
+      type: "recording-stop";
+      file: File;
+      blob: Blob;
+      url: string;
+      durationSec: number;
+    }
+  | { type: "recording-error"; message: string };
+
 function useVoiceRecorder(
-  opts: { maxSeconds?: number; onStop?: (file: File, blob: Blob) => void } = {}
+  opts: {
+    maxSeconds?: number;
+    onStop?: (file: File, blob: Blob, durationSec: number) => void;
+    onStart?: () => void;
+    onPause?: (elapsed: number) => void;
+    onResume?: (elapsed: number) => void;
+    onProgress?: (elapsed: number) => void;
+    onError?: (message: string) => void;
+  } = {}
 ) {
-  const { maxSeconds = 180, onStop } = opts;
+  const {
+    maxSeconds = 180,
+    onStop,
+    onStart,
+    onPause,
+    onResume,
+    onProgress,
+    onError,
+  } = opts;
 
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [level, setLevel] = useState(0); // 0-100
+  const [level, setLevel] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const recRef = useRef<MediaRecorder | null>(null);
@@ -32,22 +63,19 @@ function useVoiceRecorder(
       "audio/mp4",
       "audio/ogg;codecs=opus",
     ];
-    for (const t of types) {
-      if (MediaRecorder.isTypeSupported?.(t)) return t;
-    }
+    for (const t of types) if (MediaRecorder.isTypeSupported?.(t)) return t;
     return "";
   };
 
   const startMeter = (stream: MediaStream) => {
     try {
-      // @ts-expect-error: webkitAudioContext fallback
+      // @ts-expect-error webkit fallback
       const Ctx = window.AudioContext || window.webkitAudioContext;
       audioCtxRef.current = new Ctx();
       analyserRef.current = audioCtxRef.current.createAnalyser();
       analyserRef.current.fftSize = 2048;
       sourceRef.current = audioCtxRef.current.createMediaStreamSource(stream);
       sourceRef.current.connect(analyserRef.current);
-
       const data = new Uint8Array(analyserRef.current.frequencyBinCount);
       const tick = () => {
         analyserRef.current!.getByteFrequencyData(data);
@@ -58,9 +86,7 @@ function useVoiceRecorder(
         rafRef.current = requestAnimationFrame(tick);
       };
       rafRef.current = requestAnimationFrame(tick);
-    } catch {
-      // Meter is optional
-    }
+    } catch {}
   };
 
   const stopMeter = () => {
@@ -73,7 +99,8 @@ function useVoiceRecorder(
     } catch {}
     sourceRef.current = null;
     analyserRef.current = null;
-    audioCtxRef = null as any; // ensure GC
+    // @ts-expect-error help GC
+    audioCtxRef = null;
     setLevel(0);
   };
 
@@ -82,6 +109,7 @@ function useVoiceRecorder(
     timerRef.current = window.setInterval(() => {
       const s = Math.floor((Date.now() - t0) / 1000);
       setElapsed(s);
+      onProgress?.(s);
       if (maxSeconds && s >= maxSeconds) stop();
     }, 250);
   };
@@ -142,11 +170,12 @@ function useVoiceRecorder(
           : type.includes("ogg")
           ? "ogg"
           : "wav";
-
         const file = new File([blob], `recording-${Date.now()}.${ext}`, {
           type,
         });
-        onStop?.(file, blob);
+
+        const durationSec = elapsed; // capture before we reset elapsed
+        onStop?.(file, blob, durationSec);
         setElapsed(0);
       };
 
@@ -155,8 +184,11 @@ function useVoiceRecorder(
       startTimer();
       setIsRecording(true);
       setIsPaused(false);
+      onStart?.();
     } catch (e: any) {
-      setError(e?.message || "Microphone permission denied or unavailable.");
+      const msg = e?.message || "Microphone permission denied or unavailable.";
+      setError(msg);
+      onError?.(msg);
       cleanup();
     }
   };
@@ -176,6 +208,7 @@ function useVoiceRecorder(
       r.pause();
       setIsPaused(true);
       stopTimer();
+      onPause?.(elapsed);
     }
   };
   const resume = () => {
@@ -184,6 +217,7 @@ function useVoiceRecorder(
       r.resume();
       setIsPaused(false);
       startTimer();
+      onResume?.(elapsed);
     }
   };
 
@@ -200,12 +234,23 @@ function useVoiceRecorder(
   };
 }
 
-const ChatInput = ({ onSend }: { onSend: (text: string) => void }) => {
+const ChatInput = ({
+  onSend,
+  onVoiceEvent,
+}: {
+  onSend: (text: string) => void;
+  onVoiceEvent?: (ev: VoiceEvent) => void;
+}) => {
   const [message, setMessage] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Voice recorder usage – does not alter your icon row layout
+  const fmt = (s: number) => {
+    const m = String(Math.floor(s / 60)).padStart(2, "0");
+    const ss = String(s % 60).padStart(2, "0");
+    return `${m}:${ss}`;
+  };
+
   const {
     isRecording,
     isPaused,
@@ -218,13 +263,15 @@ const ChatInput = ({ onSend }: { onSend: (text: string) => void }) => {
     resume,
   } = useVoiceRecorder({
     maxSeconds: 180,
-    onStop: async (file) => {
-      // TODO: send to your backend/STT
-      // Example:
-      // const form = new FormData();
-      // form.append("audio", file);
-      // await fetch("/api/upload-audio", { method: "POST", body: form });
-      console.log("Recorded file:", file);
+    onStart: () => onVoiceEvent?.({ type: "recording-start" }),
+    onPause: (e) => onVoiceEvent?.({ type: "recording-pause", elapsed: e }),
+    onResume: (e) => onVoiceEvent?.({ type: "recording-resume", elapsed: e }),
+    onProgress: (e) =>
+      onVoiceEvent?.({ type: "recording-progress", elapsed: e }),
+    onError: (m) => onVoiceEvent?.({ type: "recording-error", message: m }),
+    onStop: async (file, blob, durationSec) => {
+      const url = URL.createObjectURL(file);
+      onVoiceEvent?.({ type: "recording-stop", file, blob, url, durationSec });
     },
   });
 
@@ -237,22 +284,15 @@ const ChatInput = ({ onSend }: { onSend: (text: string) => void }) => {
     }
   }, [message]);
 
-    const submit = () => {
+  const submit = () => {
     const text = message.trim();
     if (!text) return;
     onSend(text);
     setMessage("");
   };
 
-  const fmt = (s: number) => {
-    const m = String(Math.floor(s / 60)).padStart(2, "0");
-    const ss = String(s % 60).padStart(2, "0");
-    return `${m}:${ss}`;
-  };
-
   return (
     <div className="w-full">
-      {/* Your original input row — icons untouched and in the same order */}
       <div
         className={`w-full flex items-end gap-2 bg-white dark:bg-[#181818] p-3 border shadow-sm transition-all duration-300 ${
           isExpanded ? "rounded-xl" : "rounded-full"
@@ -272,7 +312,6 @@ const ChatInput = ({ onSend }: { onSend: (text: string) => void }) => {
           style={{ maxHeight: "400px", overflowY: "auto" }}
         />
 
-        {/* Mic icon: same markup/position; only added onClick + labels */}
         <button
           className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
           onClick={() => (isRecording ? stop() : start())}
@@ -291,7 +330,6 @@ const ChatInput = ({ onSend }: { onSend: (text: string) => void }) => {
         </button>
       </div>
 
-      {/* Optional status bar BELOW the input (does not touch icons row) */}
       {(isRecording || error) && (
         <div className="mt-2 flex items-center justify-between rounded-xl border border-zinc-700 bg-zinc-900/70 px-3 py-2">
           <div className="flex items-center gap-2">
@@ -300,7 +338,7 @@ const ChatInput = ({ onSend }: { onSend: (text: string) => void }) => {
                 isPaused ? "bg-yellow-500" : "bg-red-500"
               } ${!isPaused ? "animate-pulse" : ""}`}
             />
-            <span className="text-sm text-zinc-200">
+            <span className="text-sm text-zinc-2 00">
               {isPaused ? "Paused" : "Recording"}
             </span>
             {isRecording && (
@@ -311,7 +349,6 @@ const ChatInput = ({ onSend }: { onSend: (text: string) => void }) => {
             {error && <span className="text-sm text-red-400">{error}</span>}
           </div>
 
-          {/* Simple level meter */}
           {isRecording && (
             <div className="mx-4 h-2 flex-1 rounded bg-zinc-800 overflow-hidden">
               <div
@@ -321,7 +358,6 @@ const ChatInput = ({ onSend }: { onSend: (text: string) => void }) => {
             </div>
           )}
 
-          {/* Pause/Resume + Stop (text buttons; optional) */}
           {isRecording && (
             <div className="flex items-center gap-2">
               <button

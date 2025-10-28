@@ -17,13 +17,13 @@ export default function Player() {
   return (
     <MediaController
       style={{
-        width: "70%",
-        aspectRatio: "16/9",
+        width: "100%",
+        aspectRatio: "1:1",
       }}
     >
       <ReactPlayer
         slot="media"
-        src="https://stream.mux.com/maVbJv2GSYNRgS02kPXOOGdJMWGU1mkA019ZUjYE7VU7k"
+        src="src/data/samplevid.mp4"
         controls={false}
         style={{
           width: "100%",
