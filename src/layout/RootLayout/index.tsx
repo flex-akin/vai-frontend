@@ -1,10 +1,10 @@
 import { Outlet } from "react-router-dom";
-import { SideBar } from "../../components";
+// import { SideBar } from "../../components";
 
 const RootLayout = () => {
   return (
     <div className="flex h-screen">
-      <SideBar />
+      {/* <SideBar /> */}
       <div className="flex-1">
         <Outlet />
       </div>
