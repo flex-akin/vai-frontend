@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Upload, Loader as LoaderIcon } from "lucide-react";
+import { Upload } from "lucide-react";
 import Loader from "../Loader";
 
 export interface VideoFormData {
@@ -24,7 +24,6 @@ export default function VideoUploadForm({
   const [videoDuration, setVideoDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

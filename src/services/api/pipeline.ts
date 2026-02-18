@@ -1,4 +1,3 @@
-import { data } from "react-router-dom";
 import axiosClient from "../http/axiosClient";
 
 export type PipelineResponse = {

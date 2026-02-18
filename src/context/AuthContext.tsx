@@ -103,14 +103,12 @@ const clearPersistedAuth = () => {
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const persisted = readPersistedAuth();
     if (persisted?.user) {
       setUser(persisted.user);
     }
-    setIsInitialized(true);
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {

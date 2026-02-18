@@ -5,8 +5,6 @@ import { Mic, PauseCircle, PlayCircle } from "lucide-react";
 import Player from "../../components/ui/VideoPlayer";
 import TranscriptList from "../../components/ui/TranscriptList";
 import MovieGrid from "../../components/ui/MovieGrid";
-import { getTranscript } from "../../services/api/transcript";
-import type { TranscribeFromVideoOptions } from "../../services/utils/transcribeFromVideo";
 import type { TranscriptResponse } from "../../services/api/transcript";
 import { callVideoPipeline } from "../../services/api/pipeline";
 import type { PipelineResponse } from "../../services/api/pipeline";
@@ -879,9 +877,7 @@ export default function Watch(props: {
   }, [showGeneratedVideoModal]);
 
   // helper to transcribe the uploaded video via backend endpoint
-  const transcribeUploadedVideo = async (
-    opts: TranscribeFromVideoOptions = {},
-  ) => {
+  const transcribeUploadedVideo = async () => {
     // Prevent multiple concurrent requests
     if (isTranscribing) {
       console.warn("Transcription already in progress");
@@ -937,25 +933,6 @@ export default function Watch(props: {
     savedTimeRef.current = v.currentTime;
     wasPlayingRef.current = !v.paused && !v.ended;
     originalSrcRef.current = v.currentSrc || v.src || null;
-  };
-
-  const resumeMainVideo = () => {
-    const v = getMainVideo();
-    if (!v) return;
-
-    try {
-      if (savedTimeRef.current != null) {
-        v.currentTime = savedTimeRef.current;
-      }
-
-      if (wasPlayingRef.current) {
-        v.play().catch((err) => {
-          console.error("Failed to resume video:", err);
-        });
-      }
-    } catch (err) {
-      console.error("Error resuming main video:", err);
-    }
   };
 
   const restoreMainVideoSrc = () => {
@@ -1088,7 +1065,7 @@ export default function Watch(props: {
                     <h2 className="text-2xl font-bold">Transcript</h2>
                     <button
                       onClick={() =>
-                        transcribeUploadedVideo({ format: "mp3" }).catch(
+                        transcribeUploadedVideo().catch(
                           () => {},
                         )
                       }
