@@ -13,7 +13,11 @@ import {
   MediaFullscreenButton,
 } from "media-chrome/react";
 
-export default function Player() {
+interface PlayerProps {
+  src?: string;
+}
+
+export default function Player({ src = "src/data/samplevid.mp4" }: PlayerProps) {
   return (
     <MediaController
       style={{
@@ -23,7 +27,7 @@ export default function Player() {
     >
       <ReactPlayer
         slot="media"
-        src="src/data/samplevid.mp4"
+        src={src}
         controls={false}
         style={{
           width: "100%",

@@ -10,14 +10,30 @@ import Home from "../pages/Home";
 import RootLayout from "../layout/RootLayout";
 import Watch from "../pages/watch";
 import Popup from "../pages/popup";
+import WatchLayout from "../layout/WatchLayout";
+import Login from "../pages/Login";
+import Signup from "../pages/Signup";
+import ProtectedRoute from "./ProtectedRoute";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
       <Route path="/" element={<RootLayout />}>
-        <Route index element={<Home />} />
-        <Route path="watch" element={<Watch />} />
+        <Route
+          index
+          element={
+            <ProtectedRoute>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
         <Route path="popup" element={<Popup />} />
+      </Route>
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route path="/watch" element={<WatchLayout />}>
+        <Route index element={<Watch />} />
+        <Route path=":videoId" element={<Watch />} />
       </Route>
     </>
   )

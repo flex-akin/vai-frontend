@@ -3,7 +3,8 @@ import { Play } from "lucide-react";
 export type Movie = {
   id: string | number;
   title: string;
-  poster: string;   // full image URL
+  poster?: string;   // full image URL
+  videoUrl?: string;
   year?: string | number;
 };
 
@@ -29,12 +30,26 @@ export default function MovieGrid({
             aria-label={`Open ${m.title}`}
             onClick={() => onPlay?.(m)}
           >
-            <img
-              src={m.poster}
-              alt={m.title}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              loading="lazy"
-            />
+            {m.poster ? (
+              <img
+                src={m.poster}
+                alt={m.title}
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                loading="lazy"
+              />
+            ) : m.videoUrl ? (
+              <video
+                src={m.videoUrl}
+                className="h-full w-full object-cover"
+                muted
+                playsInline
+                preload="metadata"
+              />
+            ) : (
+              <div className="h-full w-full bg-neutral-900 grid place-items-center text-xs text-white/60">
+                No preview
+              </div>
+            )}
 
             {/* hover overlay */}
             <div className="pointer-events-none absolute inset-0 bg-black/30 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />

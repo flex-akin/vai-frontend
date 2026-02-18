@@ -1,16 +1,23 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import Navbar from "../../components/nav/navbar";
+import { useAuth } from "../../context/AuthContext";
 
-const RootLayout = () => {
+const WatchLayout = () => {
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
   return (
     <div className="flex h-screen">
      
       <div className="flex-1">
          <Navbar
         onSearch={(q) => console.log("search:", q)}
-        onSignIn={() => console.log("sign in")}
-        onSignOut={() => console.log("sign out")}
-        user={{ name: "Ada Lovelace" }}
+        onSignIn={() => navigate("/login")}
+        onSignOut={() => {
+          signOut();
+          navigate("/login");
+        }}
+        user={user}
       />
         <Outlet />
       </div>
@@ -18,4 +25,4 @@ const RootLayout = () => {
   );
 };
 
-export default RootLayout;
+export default WatchLayout;

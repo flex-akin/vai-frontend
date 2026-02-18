@@ -19,13 +19,12 @@ export default defineConfig({
   // Development-time proxy to avoid CORS when calling a local API server
   server: {
     proxy: {
-      // forward /transcribe requests to the local transcription backend
-      '/transcribe': {
-        target: 'http://localhost:8001',
+      // forward /api requests to the local API backend
+      '/api': {
+        target: 'http://localhost:8000',
         changeOrigin: true,
         secure: false,
       },
-      // add other API proxies here if needed, e.g. '/api': { target: 'http://localhost:4000' }
     }
   }
 })

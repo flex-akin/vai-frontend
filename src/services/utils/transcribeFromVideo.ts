@@ -100,14 +100,17 @@ export async function transcribeVideoFile(videoFile: File, opts: TranscribeFromV
   const { format = "mp3", audioFilename, transcriptOptions = {}, onProgress } = opts;
 
   try {
+    console.log("transcribeVideoFile: starting with file", videoFile.name, "format:", format);
     onProgress?.("Starting audio extraction (ffmpeg)");
 
     const audioFile = await convertFileWithFFmpeg(videoFile, format);
+    console.log("transcribeVideoFile: audio extracted", audioFile.name, audioFile.size, "bytes");
 
     // optionally rename
     const finalAudioFile = audioFilename ? new File([audioFile], audioFilename, { type: audioFile.type }) : audioFile;
 
     onProgress?.("Audio extraction complete — uploading for transcription");
+    console.log("transcribeVideoFile: sending to transcribe endpoint", finalAudioFile.name);
 
     const apiOpts: GetTranscriptOptions = {
       model: transcriptOptions.model || "whisper-1",
@@ -116,11 +119,14 @@ export async function transcribeVideoFile(videoFile: File, opts: TranscribeFromV
       baseURL: transcriptOptions.baseURL,
     } as GetTranscriptOptions;
     const res = await getTranscript(finalAudioFile, apiOpts);
+    console.log("transcribeVideoFile: transcribe response", res);
 
     onProgress?.("Transcription complete");
     return res;
   } catch (err) {
-    onProgress?.("Error during transcribeVideoFile: " + String(err));
+    const msg = "Error during transcribeVideoFile: " + String(err);
+    console.error(msg);
+    onProgress?.(msg);
     throw err;
   }
 }

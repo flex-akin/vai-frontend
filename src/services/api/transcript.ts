@@ -4,36 +4,27 @@ export type GetTranscriptOptions = {
   model?: string;
   language?: string;
   min_words_for_sentiment?: number;
-  /**
-   * Optional full base URL (e.g. http://localhost:8001). If provided, it will be used instead of the axios client's baseURL.
-   */
+ 
   baseURL?: string;
 };
 
 export type TranscriptResponse = any; // replace with a proper shape if your API returns a known structure
 
-/**
- * Uploads an audio file to the /transcribe endpoint and returns the parsed response.
- *
- * Mirrors the curl example:
- * curl -X 'POST' 'http://localhost:8001/transcribe' -H 'accept: application/json' \
- *  -H 'Content-Type: multipart/form-data' \
- *  -F 'file=@samplevid.mp3;type=audio/mpeg' -F 'model=whisper-1' -F 'language=en' -F 'min_words_for_sentiment=4'
- */
+
 export const getTranscript = async (
   file: File,
   opts: GetTranscriptOptions = {}
 ): Promise<TranscriptResponse> => {
   const form = new FormData();
-  form.append("file", file, file.name || "audio");
+  form.append("audio_file", file, file.name || "audio");
   if (opts.model) form.append("model", opts.model);
   if (opts.language) form.append("language", opts.language);
   if (typeof opts.min_words_for_sentiment !== "undefined")
     form.append("min_words_for_sentiment", "4");
 
   const url = opts.baseURL
-    ? `${opts.baseURL.replace(/\/$/, "")}/transcribe`
-    : `/transcribe`;
+    ? `${opts.baseURL.replace(/\/$/, "")}/api/v1/transcribe`
+    : `/api/v1/transcribe`;
 
   // If a full baseURL is provided we still use axiosClient to keep interceptors, but pass absolute URL.
   // IMPORTANT: don't set Content-Type for FormData. Let the browser set the boundary.

@@ -1,10 +1,10 @@
 import axios from "axios";
 
-// In development we want to use a relative base so Vite's dev server proxy can
-// forward requests (e.g. `/transcribe`) to the backend and avoid CORS issues.
+  // In development we want to use a relative base so Vite's dev server proxy can
+  // forward requests (e.g. `/api`) to the backend and avoid CORS issues.
 // In production you can set this to your real API origin.
 const isDev = process.env.NODE_ENV === "development" || import.meta.env?.MODE === 'development';
-const BASE = isDev ? undefined : "http://localhost:8001";
+const BASE = isDev ? "/" : "http://localhost:8000";
 
 const axiosClient = axios.create({
   baseURL: BASE,
