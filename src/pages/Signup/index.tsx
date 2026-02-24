@@ -164,7 +164,7 @@ const Signup = () => {
           <div className="flex flex-col justify-center gap-6">
             <span className="text-sm uppercase tracking-[0.5em] text-white/60">aworan.ai</span>
             <h1 className="text-4xl font-semibold leading-tight text-white md:text-5xl font-montserrat">
-              Create, analyze, and share video knowledge.
+              Upload, react and share video knowledge.
             </h1>
             <p className="max-w-xl text-base text-white/70 font-dmsans">
               Invite your team, create collaborative libraries, and turn long-form
