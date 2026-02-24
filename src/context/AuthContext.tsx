@@ -35,7 +35,7 @@ type PersistedAuth = {
   token: string;
 };
 
-const API_BASE_URL = "http://localhost:8000/api/v1/auth";
+const API_BASE_URL = "https://aworan.ai-api.neoproducts.ca/api/v1/auth";
 
 const extractToken = (payload: Record<string, any> | null | undefined) => {
   if (!payload) return null;

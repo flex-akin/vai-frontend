@@ -4,7 +4,7 @@ import axios from "axios";
   // forward requests (e.g. `/api`) to the backend and avoid CORS issues.
 // In production you can set this to your real API origin.
 const isDev = process.env.NODE_ENV === "development" || import.meta.env?.MODE === 'development';
-const BASE = isDev ? "/" : "http://localhost:8000";
+const BASE = isDev ? "/" : "https://aworan.ai-api.neoproducts.ca";
 
 const axiosClient = axios.create({
   baseURL: BASE,

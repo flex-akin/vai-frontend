@@ -72,7 +72,7 @@ const Login = () => {
               Unlock deeper video insight in minutes.
             </h1>
             <p className="max-w-xl text-base text-white/70 font-dmsans">
-              Sign in to your workspace to upload, transcribe, and summarize videos
+              Sign in to your workspace to upload, transcribe, and react to videos
               with cinematic clarity.
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
