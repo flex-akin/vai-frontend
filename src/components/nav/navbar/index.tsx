@@ -29,7 +29,7 @@ export default function Navbar(props: {
       { label: "Movies", href: "/movies" },
       { label: "My List", href: "/list" },
     ],
-    logo = <span className="text-xl font-extrabold">aworan.ai</span>,
+    logo = <span className="text-xl font-extrabold">Aworan.ai</span>,
     user,
     onSearch,
     onSignIn,

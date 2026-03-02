@@ -67,12 +67,12 @@ const Login = () => {
       <div className="relative z-10 mx-auto flex min-h-screen max-w-6xl items-center px-6 py-16">
         <div className="grid w-full gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="flex flex-col justify-center gap-6">
-            <span className="text-sm uppercase tracking-[0.5em] text-white/60">aworan.ai</span>
+            <span className="text-sm uppercase tracking-[0.5em] text-white/60">Aworan.ai</span>
             <h1 className="text-4xl font-semibold leading-tight text-white md:text-5xl font-montserrat">
               Unlock deeper video insight in minutes.
             </h1>
             <p className="max-w-xl text-base text-white/70 font-dmsans">
-              Sign in to your workspace to upload, transcribe, and summarize videos
+              Sign in to your workspace to upload, transcribe, and react to videos
               with cinematic clarity.
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -151,7 +151,7 @@ const Login = () => {
             </form>
 
             <div className="mt-6 text-sm text-white/60">
-              New to aworan.ai?{" "}
+              New to Aworan.ai?{" "}
               <Link to="/signup" className="text-white underline decoration-white/40">
                 Create an account
               </Link>

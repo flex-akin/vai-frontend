@@ -21,7 +21,7 @@ export default defineConfig({
     proxy: {
       // forward /api requests to the local API backend
       '/api': {
-        target: 'http://localhost:8000',
+        target: 'https://aworan.ai-api.neoproducts.ca',
         changeOrigin: true,
         secure: false,
       },

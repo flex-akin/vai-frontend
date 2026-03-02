@@ -35,7 +35,7 @@ type PersistedAuth = {
   token: string;
 };
 
-const API_BASE_URL = "http://localhost:8000/api/v1/auth";
+const API_BASE_URL = "https://aworan.ai-api.neoproducts.ca/api/v1/auth";
 
 const extractToken = (payload: Record<string, any> | null | undefined) => {
   if (!payload) return null;
@@ -126,7 +126,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     const data = (await response.json()) as Record<string, any>;
-    const fallbackName = email.split("@")[0] || "aworan.ai User";
+    const fallbackName = email.split("@")[0] || "Aworan.ai User";
     const user = extractUser(data, { name: fallbackName, email });
     const token = extractToken(data) || "session";
 

@@ -26,6 +26,11 @@ export const getVideoById = async (id: string | number): Promise<UserVideo> => {
   return res.data;
 };
 
+export const getDefaultVideos = async (): Promise<UserVideo[]> => {
+  const res = await axiosClient.get<UserVideo[]>("/api/v1/videos/default");
+  return res.data;
+};
+
 export const uploadAudio = async (file: File) => {
   const form = new FormData();
   form.append("file", file);

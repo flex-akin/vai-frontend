@@ -69,7 +69,7 @@ const Signup = () => {
           <div className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
             <div className="mb-6">
               <h2 className="text-2xl font-semibold font-montserrat">Start creating</h2>
-              <p className="text-sm text-white/60">Set up your aworan.ai space.</p>
+              <p className="text-sm text-white/60">Set up your Aworan.ai space.</p>
             </div>
 
             <form className="grid gap-4" onSubmit={handleSubmit}>
@@ -164,7 +164,7 @@ const Signup = () => {
           <div className="flex flex-col justify-center gap-6">
             <span className="text-sm uppercase tracking-[0.5em] text-white/60">aworan.ai</span>
             <h1 className="text-4xl font-semibold leading-tight text-white md:text-5xl font-montserrat">
-              Create, analyze, and share video knowledge.
+              Upload, react and share video knowledge.
             </h1>
             <p className="max-w-xl text-base text-white/70 font-dmsans">
               Invite your team, create collaborative libraries, and turn long-form

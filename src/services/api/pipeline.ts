@@ -99,7 +99,7 @@ export const callVideoPipeline = async (
     form,
     {
       headers: { "Content-Type": "multipart/form-data" },
-      timeout: 10 * 60 * 1000, // 10 minute timeout for the long-running operation
+      timeout: 10 * 60 * 1000,
     }
   );
   // const res = {

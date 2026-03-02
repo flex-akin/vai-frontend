@@ -87,9 +87,9 @@ export default function VideoUploadForm({
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="bg-[#181818] rounded-2xl p-8 shadow-lg">
-        <h1 className="text-3xl font-bold mb-2">Upload Video</h1>
-        <p className="text-zinc-400 mb-8">
+      <div className="bg-[#181818] rounded-2xl p-4 shadow-lg sm:p-8">
+        <h1 className="text-2xl font-bold mb-2 sm:text-3xl">Upload Video</h1>
+        <p className="text-zinc-400 mb-6 sm:mb-8">
           Upload a video to analyze, get transcripts, and more.
         </p>
 
@@ -99,7 +99,7 @@ export default function VideoUploadForm({
             <label className="block text-sm font-medium mb-2">Video File *</label>
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-zinc-600 hover:border-zinc-400 rounded-lg p-8 cursor-pointer transition text-center"
+              className="border-2 border-dashed border-zinc-600 hover:border-zinc-400 rounded-lg p-5 cursor-pointer transition text-center sm:p-8"
             >
               <input
                 ref={fileInputRef}

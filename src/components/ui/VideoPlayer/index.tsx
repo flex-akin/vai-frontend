@@ -22,7 +22,7 @@ export default function Player({ src = "src/data/samplevid.mp4" }: PlayerProps) 
     <MediaController
       style={{
         width: "100%",
-        aspectRatio: "1:1",
+        aspectRatio: "16/9",
       }}
     >
       <ReactPlayer
