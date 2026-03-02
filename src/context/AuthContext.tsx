@@ -126,7 +126,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     const data = (await response.json()) as Record<string, any>;
-    const fallbackName = email.split("@")[0] || "aworan.ai User";
+    const fallbackName = email.split("@")[0] || "Aworan.ai User";
     const user = extractUser(data, { name: fallbackName, email });
     const token = extractToken(data) || "session";
 

@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 import Loader from "../components/ui/Loader";
 import Home from "../pages/Home";
+import UnderConstruction from "../pages/UnderConstruction";
 import RootLayout from "../layout/RootLayout";
 import Watch from "../pages/watch";
 import Popup from "../pages/popup";
@@ -28,6 +29,9 @@ const router = createBrowserRouter(
           }
         />
         <Route path="popup" element={<Popup />} />
+        <Route path="series" element={<UnderConstruction pageName="Series" />} />
+        <Route path="movies" element={<UnderConstruction pageName="Movies" />} />
+        <Route path="list" element={<UnderConstruction pageName="My List" />} />
       </Route>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />

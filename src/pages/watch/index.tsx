@@ -1,6 +1,6 @@
 // components/ui/VoiceControlBar.tsx
 import { useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { Mic, PauseCircle, PlayCircle } from "lucide-react";
 import Player from "../../components/ui/VideoPlayer";
 import TranscriptList from "../../components/ui/TranscriptList";
@@ -620,6 +620,11 @@ export default function Watch(props: {
         } finally {
           setIsPipelineProcessing(false);
           setProcessingStartTime(null);
+          setVideoLoaderVisible(false);
+          if (loaderTimeoutRef.current) {
+            window.clearTimeout(loaderTimeoutRef.current);
+            loaderTimeoutRef.current = null;
+          }
         }
       })();
 
@@ -691,9 +696,11 @@ export default function Watch(props: {
   const [processingStartTime, setProcessingStartTime] = useState<number | null>(
     null,
   );
-  const [generatedVideoPlaybackMode, setGeneratedVideoPlaybackMode] = useState<
-    "inline" | "modal"
-  >("modal");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const generatedVideoPlaybackMode =
+    (searchParams.get("mode") as "inline" | "modal" | null) ?? "modal";
+  const setGeneratedVideoPlaybackMode = (mode: "inline" | "modal") =>
+    setSearchParams((prev) => { prev.set("mode", mode); return prev; }, { replace: true });
   const [showGeneratedVideoModal, setShowGeneratedVideoModal] = useState(false);
   const loaderTimeoutRef = useRef<number | null>(null);
 
@@ -979,7 +986,7 @@ export default function Watch(props: {
         {/* Main container */}
         <div className="max-w-7xl mx-auto">
           {/* Video Player Section - Full Width */}
-          <div className="w-full bg-black pt-4 px-4">
+          <div className="w-full bg-black pt-3 px-3 sm:pt-4 sm:px-4">
             <div
               ref={playerWrapRef}
               className="relative w-full rounded-xl overflow-hidden bg-black"
@@ -1002,20 +1009,20 @@ export default function Watch(props: {
           </div>
 
           {/* Title and Description Section */}
-          <div className="px-4 py-6 border-b border-zinc-800">
+          <div className="px-3 py-4 border-b border-zinc-800 sm:px-4 sm:py-6">
             {videoContext.title ? (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <h1 className="text-4xl font-bold leading-tight mb-2">
+                  <h1 className="text-xl font-bold leading-tight mb-1 sm:text-2xl md:text-4xl sm:mb-2">
                     {videoContext.title}
                   </h1>
-                  <p className="text-zinc-300 text-lg leading-relaxed">
+                  <p className="text-zinc-300 text-sm leading-relaxed md:text-lg">
                     {videoContext.description}
                   </p>
                 </div>
 
                 {/* Video Metadata */}
-                <div className="flex items-center gap-6 text-sm text-zinc-400 pt-3">
+                <div className="flex flex-wrap items-center gap-3 text-xs text-zinc-400 pt-1 sm:gap-6 sm:text-sm sm:pt-3">
                   {videoContext.duration && (
                     <div className="flex items-center gap-2">
                       <span className="text-zinc-500">Duration:</span>
@@ -1046,8 +1053,8 @@ export default function Watch(props: {
               </div>
             ) : (
               <div className="space-y-2">
-                <h1 className="text-4xl font-bold">Video Player</h1>
-                <p className="text-zinc-400 text-lg">
+                <h1 className="text-xl font-bold sm:text-2xl md:text-4xl">Video Player</h1>
+                <p className="text-zinc-400 text-sm md:text-lg">
                   Upload a video from home page to see details
                 </p>
               </div>
@@ -1055,14 +1062,14 @@ export default function Watch(props: {
           </div>
 
           {/* Main Content Area */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 py-8 px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 py-4 px-3 sm:gap-6 sm:py-8 sm:px-4">
             {/* Left Column - Transcript */}
             <div className="lg:col-span-2">
               <div className="space-y-6">
                 {/* Transcript Section */}
-                <div className="bg-zinc-900/40 rounded-xl p-6 border border-zinc-800">
+                <div className="bg-zinc-900/40 rounded-xl p-4 border border-zinc-800 sm:p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-2xl font-bold">Transcript</h2>
+                    <h2 className="text-lg font-bold sm:text-2xl">Transcript</h2>
                     <button
                       onClick={() =>
                         transcribeUploadedVideo().catch(
@@ -1106,7 +1113,7 @@ export default function Watch(props: {
 
                 {/* Recommendations */}
                 <div>
-                  <h2 className="text-2xl font-bold mb-4">Related Videos</h2>
+                  <h2 className="text-lg font-bold mb-3 sm:text-2xl sm:mb-4">Related Videos</h2>
                   {relatedVideos.length === 0 ? (
                     <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-sm text-white/60">
                       No other videos yet.

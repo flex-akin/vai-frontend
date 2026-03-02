@@ -69,7 +69,7 @@ const Signup = () => {
           <div className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
             <div className="mb-6">
               <h2 className="text-2xl font-semibold font-montserrat">Start creating</h2>
-              <p className="text-sm text-white/60">Set up your aworan.ai space.</p>
+              <p className="text-sm text-white/60">Set up your Aworan.ai space.</p>
             </div>
 
             <form className="grid gap-4" onSubmit={handleSubmit}>
