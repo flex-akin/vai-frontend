@@ -49,7 +49,7 @@ function StarRating({
           );
         })}
       </div>
-      <p className="h-5 text-sm font-medium text-amber-300">
+      <p className="h-5 text-sm font-medium text-white/50">
         {(hovered || value) > 0 ? labels[(hovered || value) - 1] : ""}
       </p>
     </div>
@@ -91,10 +91,10 @@ export default function FeedbackModal({ userId, onClose }: FeedbackModalProps) {
     >
       <div className="w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-[#111111] shadow-2xl">
         {/* header */}
-        <div className="relative h-1 w-full bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500" />
+        <div className="relative h-px w-full bg-white/10" />
         <div className="flex items-center justify-between px-5 pt-5 pb-4">
           <div>
-            <h2 className="text-lg font-semibold">Feedback</h2>
+            <h2 className="text-lg font-semibold text-white">Feedback</h2>
             <p className="text-xs text-white/40">Help us improve Aworan.ai</p>
           </div>
           <button
@@ -111,16 +111,16 @@ export default function FeedbackModal({ userId, onClose }: FeedbackModalProps) {
         <div className="px-5 py-5">
           {submitted ? (
             <div className="flex flex-col items-center gap-3 py-8 text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-400/10 text-2xl">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/10 text-2xl">
                 ⭐
               </div>
-              <h3 className="text-base font-semibold">Thank you!</h3>
+              <h3 className="text-base font-semibold text-white">Thank you!</h3>
               <p className="text-sm text-white/50">
                 Your feedback means a lot to us.
               </p>
               <button
                 onClick={onClose}
-                className="mt-2 text-xs text-amber-400 underline underline-offset-2"
+                className="mt-2 text-xs text-white/60 underline underline-offset-2 hover:text-white transition"
               >
                 Close
               </button>
@@ -138,7 +138,7 @@ export default function FeedbackModal({ userId, onClose }: FeedbackModalProps) {
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Tell us what you think…"
                   rows={3}
-                  className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-amber-400/40 focus:outline-none"
+                  className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-white/30 focus:outline-none"
                 />
               </div>
 
@@ -149,7 +149,7 @@ export default function FeedbackModal({ userId, onClose }: FeedbackModalProps) {
               <button
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="w-full rounded-xl bg-amber-400 py-2.5 text-sm font-semibold text-black transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-xl bg-white py-2.5 text-sm font-semibold text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting ? "Submitting…" : "Submit feedback"}
               </button>

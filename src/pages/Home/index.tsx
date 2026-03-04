@@ -161,7 +161,7 @@ const Home = () => {
               onClick={() => setShowFeedback(true)}
               className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 transition hover:bg-amber-400/20"
             >
-              ⭐ Feedback
+              Give Feedback
             </button>
             <button
               onClick={() => setShowUpload(true)}
