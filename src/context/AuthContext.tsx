@@ -11,6 +11,7 @@ type AuthUser = {
   id?: number;
   name: string;
   email: string;
+  is_admin: boolean;
 };
 
 type AuthContextValue = {
@@ -61,8 +62,9 @@ const extractUser = (
     fallback.name;
   const email = user.email || fallback.email;
   const id = typeof user.id === "number" ? user.id : fallback.id;
+  const is_admin = typeof user.is_admin === "boolean" ? user.is_admin : false;
 
-  return { id, name, email };
+  return { id, name, email, is_admin };
 };
 
 const parseErrorMessage = async (response: Response) => {
@@ -127,7 +129,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const data = (await response.json()) as Record<string, any>;
     const fallbackName = email.split("@")[0] || "Aworan.ai User";
-    const user = extractUser(data, { name: fallbackName, email });
+    const user = extractUser(data, { name: fallbackName, email, is_admin: false });
     const token = extractToken(data) || "session";
 
     const payload: PersistedAuth = { user, token };
@@ -163,6 +165,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const user = extractUser(data, {
       name: `${firstName} ${lastName}`.trim(),
       email,
+      is_admin: false,
     });
     const token = extractToken(data) || "session";
 

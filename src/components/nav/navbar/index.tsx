@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 type NavLink = { label: string; href: string };
-type User = { name?: string; avatarUrl?: string };
+type User = { name?: string; avatarUrl?: string; is_admin?: boolean };
 
 export default function Navbar(props: {
   links?: NavLink[];
@@ -178,6 +178,15 @@ export default function Navbar(props: {
                         <UserRound className="w-4 h-4" />
                         Account
                       </Link>
+                      {user.is_admin && (
+                        <Link
+                          to="/admin/feedback"
+                          role="menuitem"
+                          className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/10 text-amber-300"
+                        >
+                          ⭐ Feedback (Admin)
+                        </Link>
+                      )}
                       <button
                         role="menuitem"
                         onClick={onSignOut}
