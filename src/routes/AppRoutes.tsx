@@ -15,6 +15,8 @@ import WatchLayout from "../layout/WatchLayout";
 import Login from "../pages/Login";
 import Signup from "../pages/Signup";
 import ProtectedRoute from "./ProtectedRoute";
+import AdminRoute from "./AdminRoute";
+import AdminFeedback from "../pages/AdminFeedback";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -33,6 +35,14 @@ const router = createBrowserRouter(
         <Route path="movies" element={<UnderConstruction pageName="Movies" />} />
         <Route path="list" element={<UnderConstruction pageName="My List" />} />
       </Route>
+      <Route
+        path="/admin/feedback"
+        element={
+          <AdminRoute>
+            <AdminFeedback />
+          </AdminRoute>
+        }
+      />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/watch" element={<WatchLayout />}>

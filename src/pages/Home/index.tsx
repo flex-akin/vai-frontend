@@ -6,6 +6,7 @@ import { useVideo } from "../../context/VideoContext";
 import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
 import Navbar from "../../components/nav/navbar";
+import FeedbackModal from "../../components/ui/FeedbackModal";
 import type { UserVideo } from "../../services/api/types";
 
 const GUIDELINES = [
@@ -25,6 +26,7 @@ const Home = () => {
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [recentVideos, setRecentVideos] = useState<UserVideo[]>([]);
   const [showUpload, setShowUpload] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [defaultVideos, setDefaultVideos] = useState<UserVideo[]>([]);
   const [isFetchingDefaults, setIsFetchingDefaults] = useState(false);
   const [guidelinesDismissed, setGuidelinesDismissed] = useState(
@@ -144,7 +146,7 @@ const Home = () => {
           signOut();
           navigate("/login");
         }}
-        user={user}
+        user={user ? { name: user.name, is_admin: user.is_admin } : null}
       />
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -154,12 +156,20 @@ const Home = () => {
               Manage uploads and jump back into recent work.
             </p>
           </div>
-          <button
-            onClick={() => setShowUpload(true)}
-            className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-white/90"
-          >
-            Add new
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowFeedback(true)}
+              className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-300 transition hover:bg-amber-400/20"
+            >
+              ⭐ Feedback
+            </button>
+            <button
+              onClick={() => setShowUpload(true)}
+              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black hover:bg-white/90"
+            >
+              Add new
+            </button>
+          </div>
         </div>
 
         {!guidelinesDismissed && (
@@ -359,6 +369,10 @@ const Home = () => {
           )}
         </div>
       </div>
+
+      {showFeedback && user?.id && (
+        <FeedbackModal userId={user.id} onClose={() => setShowFeedback(false)} />
+      )}
 
       {showUpload && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
