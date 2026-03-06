@@ -91,7 +91,7 @@ const Login = () => {
 
           <div className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur">
             <div className="mb-6">
-              <h2 className="text-2xl font-semibold font-montserrat">Welcome back</h2>
+              <h2 className="text-2xl font-semibold font-montserrat">Let’s Get You In</h2>
               <p className="text-sm text-white/60">Sign in to continue.</p>
             </div>
 
