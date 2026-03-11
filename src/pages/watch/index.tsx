@@ -698,7 +698,7 @@ export default function Watch(props: {
   );
   const [searchParams, setSearchParams] = useSearchParams();
   const generatedVideoPlaybackMode =
-    (searchParams.get("mode") as "inline" | "modal" | null) ?? "modal";
+    (searchParams.get("mode") as "inline" | "modal" | null) ?? "inline";
   const setGeneratedVideoPlaybackMode = (mode: "inline" | "modal") =>
     setSearchParams((prev) => { prev.set("mode", mode); return prev; }, { replace: true });
   const [showGeneratedVideoModal, setShowGeneratedVideoModal] = useState(false);
