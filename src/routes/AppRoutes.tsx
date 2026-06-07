@@ -17,6 +17,7 @@ import Signup from "../pages/Signup";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminRoute from "./AdminRoute";
 import AdminFeedback from "../pages/AdminFeedback";
+import AdminEvents from "../pages/AdminEvents";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -40,6 +41,14 @@ const router = createBrowserRouter(
         element={
           <AdminRoute>
             <AdminFeedback />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/events"
+        element={
+          <AdminRoute>
+            <AdminEvents />
           </AdminRoute>
         }
       />

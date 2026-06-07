@@ -179,13 +179,22 @@ export default function Navbar(props: {
                         Account
                       </Link>
                       {user.is_admin && (
-                        <Link
-                          to="/admin/feedback"
-                          role="menuitem"
-                          className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/10 text-amber-300"
-                        >
-                          ⭐ Feedback (Admin)
-                        </Link>
+                        <>
+                          <Link
+                            to="/admin/feedback"
+                            role="menuitem"
+                            className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/10 text-amber-300"
+                          >
+                            ⭐ Feedback (Admin)
+                          </Link>
+                          <Link
+                            to="/admin/events"
+                            role="menuitem"
+                            className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-white/10 text-amber-300"
+                          >
+                            📋 Event Logs (Admin)
+                          </Link>
+                        </>
                       )}
                       <button
                         role="menuitem"
