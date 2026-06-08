@@ -183,7 +183,7 @@ const Home = () => {
                 <div className="flex items-center gap-2.5">
                   <span className="text-xl leading-none">⚠️</span>
                   <h2 className="text-xs font-bold uppercase tracking-[0.25em] text-amber-300 sm:tracking-[0.35em]">
-                    Usage Guidelines
+                    User Guidelines
                   </h2>
                 </div>
                 <button
