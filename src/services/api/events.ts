@@ -1,4 +1,5 @@
 import axiosClient from "../http/axiosClient";
+import { getClientContext, type LocationData, type DeviceInfo } from "../utils/locationDevice";
 
 export const EVENT_TYPES = [
   "voice_input_submitted",
@@ -24,6 +25,8 @@ export type EventLog = {
   video_id: number | null;
   input_type: string | null;
   metadata: Record<string, unknown> | null;
+  location: LocationData | null;
+  device_info: DeviceInfo | null;
 };
 
 export type EventsResponse = {
@@ -53,3 +56,39 @@ export const getEvents = async (params: EventsParams = {}): Promise<EventsRespon
   const res = await axiosClient.get<EventsResponse>("/api/v1/events", { params: query });
   return res.data;
 };
+
+export type TrackEventPayload = {
+  event_type: EventType;
+  user_id?: number | null;
+  session_id?: string | null;
+  video_id?: number | null;
+  input_type?: string | null;
+  metadata?: Record<string, unknown> | null;
+  // Pass explicitly to override auto-collection, or omit to let trackEvent attach them.
+  location?: LocationData | null;
+  device_info?: DeviceInfo | null;
+};
+
+/**
+ * Fire a client-side event to the backend.
+ * Automatically attaches location + device_info from the cached client context
+ * unless the caller passes them explicitly.
+ * Never throws — failures are silently swallowed so event tracking never
+ * interrupts user-facing flows.
+ */
+export const trackEvent = async (payload: TrackEventPayload): Promise<void> => {
+  try {
+    const ctx = await getClientContext();
+    const body = {
+      ...payload,
+      location: payload.location !== undefined ? payload.location : ctx.location,
+      device_info: payload.device_info !== undefined ? payload.device_info : ctx.device_info,
+    };
+    await axiosClient.post("/api/v1/events", body);
+  } catch {
+    // event tracking must never break the main UX
+  }
+};
+
+// Re-export types from the utility so callers can import from one place.
+export type { LocationData, DeviceInfo };

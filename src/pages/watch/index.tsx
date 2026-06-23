@@ -15,6 +15,8 @@ import { getUserVideos, getVideoById } from "../../services/api/video";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
 import type { UserVideo } from "../../services/api/types";
+import { trackEvent } from "../../services/api/events";
+import { prefetchClientContext } from "../../services/utils/locationDevice";
 
 export type VoiceEvent =
   | { type: "recording-start" }
@@ -589,6 +591,15 @@ export default function Watch(props: {
         originalSrcRef.current = null;
       }
 
+      // Log the voice input event immediately on recording stop.
+      void trackEvent({
+        event_type: "voice_input_submitted",
+        user_id: user?.id ?? null,
+        video_id: routeVideoId ? Number(routeVideoId) : null,
+        input_type: "voice",
+        metadata: { duration_sec: e.durationSec, file_size_bytes: e.blob.size },
+      });
+
       // asynchronously send the recorded audio to the pipeline
       // This does transcription + sentiment analysis + intent detection + video generation
       (async () => {
@@ -704,6 +715,112 @@ export default function Watch(props: {
   const [showGeneratedVideoModal, setShowGeneratedVideoModal] = useState(false);
   const loaderTimeoutRef = useRef<number | null>(null);
 
+  // Always-current context for use inside event-listener closures (avoids stale captures).
+  const suppressPlaybackTrackingRef = useRef(false);
+  const videoEndedRef = useRef(false);
+  const eventContextRef = useRef<{ userId: number | null; videoId: number | null }>({
+    userId: null,
+    videoId: null,
+  });
+
+  // Keep eventContextRef in sync whenever user or videoId changes.
+  useEffect(() => {
+    eventContextRef.current = {
+      userId: user?.id ?? null,
+      videoId: routeVideoId ? Number(routeVideoId) : null,
+    };
+  }, [user?.id, routeVideoId]);
+
+  // Trigger geolocation permission prompt as early as possible.
+  useEffect(() => {
+    prefetchClientContext();
+  }, []);
+
+  // Attach video playback event listeners.
+  // Uses a 400ms polling interval so we survive ReactPlayer recreating the <video>
+  // element on src changes, and we never have stale closed-over state values.
+  useEffect(() => {
+    let currentVideo: HTMLVideoElement | null = null;
+    let detachListeners: (() => void) | null = null;
+
+    const attach = (v: HTMLVideoElement) => {
+      if (detachListeners) detachListeners();
+      currentVideo = v;
+
+      const onPlay = () => {
+        if (suppressPlaybackTrackingRef.current) return;
+        const { userId, videoId } = eventContextRef.current;
+        const eventType = videoEndedRef.current ? "video_replayed" : "video_playback_started";
+        videoEndedRef.current = false;
+        void trackEvent({ event_type: eventType, user_id: userId, video_id: videoId });
+      };
+
+      const onPause = () => {
+        if (suppressPlaybackTrackingRef.current) return;
+        if (v.ended) return;
+        const { userId, videoId } = eventContextRef.current;
+        void trackEvent({
+          event_type: "video_stopped",
+          user_id: userId,
+          video_id: videoId,
+          metadata: { current_time_ms: Math.round(v.currentTime * 1000) },
+        });
+      };
+
+      const onEnded = () => {
+        if (suppressPlaybackTrackingRef.current) return;
+        videoEndedRef.current = true;
+        const { userId, videoId } = eventContextRef.current;
+        void trackEvent({
+          event_type: "video_stopped",
+          user_id: userId,
+          video_id: videoId,
+          metadata: { reason: "ended" },
+        });
+      };
+
+      v.addEventListener("play", onPlay);
+      v.addEventListener("pause", onPause);
+      v.addEventListener("ended", onEnded);
+
+      detachListeners = () => {
+        v.removeEventListener("play", onPlay);
+        v.removeEventListener("pause", onPause);
+        v.removeEventListener("ended", onEnded);
+      };
+    };
+
+    // Poll every 400ms — handles lazy element creation and element replacement.
+    const intervalId = window.setInterval(() => {
+      const v = playerWrapRef.current?.querySelector("video") as HTMLVideoElement | null;
+      if (v && v !== currentVideo) {
+        attach(v);
+      }
+    }, 400);
+
+    return () => {
+      clearInterval(intervalId);
+      detachListeners?.();
+    };
+  }, []);
+
+  // Track user_exited when navigating away (SPA) or closing the tab.
+  useEffect(() => {
+    const onBeforeUnload = () => {
+      const { userId, videoId } = eventContextRef.current;
+      const body = JSON.stringify({ event_type: "user_exited", user_id: userId, video_id: videoId });
+      // sendBeacon survives page unload; plain fetch would be cancelled.
+      navigator.sendBeacon("/api/v1/events", new Blob([body], { type: "application/json" }));
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      // Also fire on SPA navigation (component unmount without page reload).
+      const { userId, videoId } = eventContextRef.current;
+      void trackEvent({ event_type: "user_exited", user_id: userId, video_id: videoId });
+    };
+  }, []);
+
   useEffect(() => {
     const loadRelated = async () => {
       if (!user?.id) return;
@@ -782,7 +899,7 @@ export default function Watch(props: {
 
     if (generatedVideoPlaybackMode === "modal") {
       // ================= MODAL MODE =================
-
+      suppressPlaybackTrackingRef.current = true;
       saveMainVideoState();
 
       const v = getMainVideo();
@@ -809,13 +926,15 @@ export default function Watch(props: {
         v.pause();
         v.src = originalSrcRef.current;
         v.load();
-        
+
         if (savedTimeRef.current != null) {
           v.currentTime = savedTimeRef.current;
         }
 
         // Wait for video to be ready before playing
         const handleCanPlay = () => {
+          // Re-enable tracking before resuming the original video.
+          suppressPlaybackTrackingRef.current = false;
           if (wasPlayingRef.current) {
             v.play().catch((err) => {
               console.error("Error resuming video:", err);
@@ -828,17 +947,21 @@ export default function Watch(props: {
 
         // Fallback in case canplay doesn't fire
         setTimeout(() => {
+          suppressPlaybackTrackingRef.current = false;
           if (wasPlayingRef.current && v.paused) {
             v.play().catch(() => {});
           }
         }, 300);
       } catch (err) {
+        suppressPlaybackTrackingRef.current = false;
         console.error("Error restoring video:", err);
       }
 
       v.removeEventListener("ended", handleGeneratedEnd);
     };
 
+    // Suppress tracking during generated video playback (source swap is not a user action).
+    suppressPlaybackTrackingRef.current = true;
     try {
       v.pause();
       v.src = generatedPath;
@@ -1285,8 +1408,8 @@ export default function Watch(props: {
         <GeneratedVideoModal
           videoPath={pipelineResult?.generated_video_path || null}
           onClose={() => {
+            suppressPlaybackTrackingRef.current = false;
             setShowGeneratedVideoModal(false);
-            // Restore the original video source and resume
             restoreMainVideoSrc();
           }}
         />
