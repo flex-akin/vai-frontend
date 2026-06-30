@@ -96,6 +96,33 @@ async function reverseGeocode(
   }
 }
 
+// IP-based fallback — no permission needed, works on HTTP and HTTPS.
+async function getIPLocation(): Promise<LocationData | null> {
+  try {
+    const controller = new AbortController();
+    const timerId = setTimeout(() => controller.abort(), 6_000);
+    let res: Response;
+    try {
+      res = await fetch("https://ipapi.co/json/", { signal: controller.signal });
+    } finally {
+      clearTimeout(timerId);
+    }
+    if (!res.ok) return null;
+    const d = await res.json();
+    if (!d.city && !d.country_name) return null;
+    return {
+      lat: typeof d.latitude === "number" ? d.latitude : 0,
+      lng: typeof d.longitude === "number" ? d.longitude : 0,
+      country: d.country_name ?? null,
+      state: d.region ?? null,
+      city: d.city ?? null,
+      street: null,
+    };
+  } catch {
+    return null;
+  }
+}
+
 // Singleton — geolocation is requested at most once per page load.
 let _locationPromise: Promise<LocationData | null> | null = null;
 
@@ -103,8 +130,9 @@ export function getLocation(): Promise<LocationData | null> {
   if (_locationPromise) return _locationPromise;
 
   _locationPromise = new Promise((resolve) => {
+    // navigator.geolocation requires HTTPS in production; fall back to IP if unavailable.
     if (!("geolocation" in navigator)) {
-      resolve(null);
+      void getIPLocation().then(resolve);
       return;
     }
 
@@ -123,7 +151,8 @@ export function getLocation(): Promise<LocationData | null> {
           ...geo,
         });
       },
-      () => resolve(null),
+      // Permission denied or unavailable — fall back to IP-based location.
+      () => void getIPLocation().then(resolve),
       { timeout: 10_000, maximumAge: 5 * 60 * 1000 }
     );
   });
@@ -154,4 +183,21 @@ export function getClientContext(): Promise<ClientContext> {
 // permission prompt before the first event fires.
 export function prefetchClientContext(): void {
   void getClientContext();
+}
+
+// ---------- Session ID ----------
+// One ID per browser tab, persisted in sessionStorage so it survives
+// SPA navigations but resets when the tab is closed.
+
+const SESSION_KEY = "vai_session_id";
+
+export function getSessionId(): string {
+  let id = sessionStorage.getItem(SESSION_KEY);
+  if (!id) {
+    id = typeof crypto.randomUUID === "function"
+      ? crypto.randomUUID()
+      : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+    sessionStorage.setItem(SESSION_KEY, id);
+  }
+  return id;
 }
