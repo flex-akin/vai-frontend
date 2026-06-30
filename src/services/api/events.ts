@@ -1,5 +1,5 @@
 import axiosClient from "../http/axiosClient";
-import { getClientContext, type LocationData, type DeviceInfo } from "../utils/locationDevice";
+import { getClientContext, getSessionId, type LocationData, type DeviceInfo } from "../utils/locationDevice";
 
 export const EVENT_TYPES = [
   "voice_input_submitted",
@@ -21,8 +21,10 @@ export type EventLog = {
   event_type: EventType;
   timestamp: string;
   user_id: number | null;
+  user_name: string | null;
   session_id: string | null;
   video_id: number | null;
+  video_title: string | null;
   input_type: string | null;
   metadata: Record<string, unknown> | null;
   location: LocationData | null;
@@ -81,6 +83,7 @@ export const trackEvent = async (payload: TrackEventPayload): Promise<void> => {
     const ctx = await getClientContext();
     const body = {
       ...payload,
+      session_id: payload.session_id !== undefined ? payload.session_id : getSessionId(),
       location: payload.location !== undefined ? payload.location : ctx.location,
       device_info: payload.device_info !== undefined ? payload.device_info : ctx.device_info,
     };

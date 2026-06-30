@@ -6,6 +6,9 @@ import axios from "axios";
 const isDev = process.env.NODE_ENV === "development" || import.meta.env?.MODE === 'development';
 const BASE = isDev ? "/" : "https://aworan.ai-api.neoproducts.ca";
 
+// Exported so sendBeacon calls (which can't use axios) use the same base.
+export const API_BASE = BASE;
+
 const axiosClient = axios.create({
   baseURL: BASE,
   // don't set a global Content-Type: let individual requests set it.

@@ -8,7 +8,7 @@ import MovieGrid from "../../components/ui/MovieGrid";
 import type { TranscriptResponse } from "../../services/api/transcript";
 import { callVideoPipeline } from "../../services/api/pipeline";
 import type { PipelineResponse } from "../../services/api/pipeline";
-import axiosClient from "../../services/http/axiosClient";
+import axiosClient, { API_BASE } from "../../services/http/axiosClient";
 import Loader from "../../components/ui/Loader";
 import { useVideo } from "../../context/VideoContext";
 import { getUserVideos, getVideoById } from "../../services/api/video";
@@ -16,7 +16,7 @@ import { useAuth } from "../../context/AuthContext";
 import { toast } from "sonner";
 import type { UserVideo } from "../../services/api/types";
 import { trackEvent } from "../../services/api/events";
-import { prefetchClientContext } from "../../services/utils/locationDevice";
+import { prefetchClientContext, getSessionId } from "../../services/utils/locationDevice";
 
 export type VoiceEvent =
   | { type: "recording-start" }
@@ -808,9 +808,9 @@ export default function Watch(props: {
   useEffect(() => {
     const onBeforeUnload = () => {
       const { userId, videoId } = eventContextRef.current;
-      const body = JSON.stringify({ event_type: "user_exited", user_id: userId, video_id: videoId });
+      const body = JSON.stringify({ event_type: "user_exited", user_id: userId, video_id: videoId, session_id: getSessionId() });
       // sendBeacon survives page unload; plain fetch would be cancelled.
-      navigator.sendBeacon("/api/v1/events", new Blob([body], { type: "application/json" }));
+      navigator.sendBeacon(`${API_BASE}/api/v1/events`, new Blob([body], { type: "application/json" }));
     };
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => {

@@ -117,8 +117,26 @@ function EventDetailModal({
                   timeZoneName: "short",
                 })}
               />
-              <DetailRow label="User ID"    value={event.user_id    ?? <span className="text-white/25">—</span>} />
-              <DetailRow label="Video ID"   value={event.video_id   ?? <span className="text-white/25">—</span>} />
+              <DetailRow
+                label="User"
+                value={
+                  event.user_name
+                    ? `${event.user_name}${event.user_id != null ? ` (#${event.user_id})` : ""}`
+                    : event.user_id != null
+                    ? `#${event.user_id}`
+                    : <span className="text-white/25">—</span>
+                }
+              />
+              <DetailRow
+                label="Video"
+                value={
+                  event.video_title
+                    ? `${event.video_title}${event.video_id != null ? ` (#${event.video_id})` : ""}`
+                    : event.video_id != null
+                    ? `#${event.video_id}`
+                    : <span className="text-white/25">—</span>
+                }
+              />
               <DetailRow label="Session ID" value={event.session_id ?? <span className="text-white/25">—</span>} />
               <DetailRow label="Input type" value={event.input_type ?? <span className="text-white/25">—</span>} />
             </div>
@@ -381,8 +399,8 @@ export default function AdminEvents() {
                 <tr className="border-b border-white/10 bg-white/5 text-left text-xs font-semibold uppercase tracking-wide text-white/40">
                   <th className="px-4 py-3">Event</th>
                   <th className="px-4 py-3 whitespace-nowrap">Timestamp</th>
-                  <th className="px-4 py-3 w-16">User</th>
-                  <th className="px-4 py-3 w-16">Video</th>
+                  <th className="px-4 py-3">User</th>
+                  <th className="px-4 py-3">Video</th>
                   <th className="px-4 py-3">Location</th>
                 </tr>
               </thead>
@@ -402,11 +420,19 @@ export default function AdminEvents() {
                         hour: "2-digit", minute: "2-digit", second: "2-digit",
                       })}
                     </td>
-                    <td className="px-4 py-3 text-white/50 font-mono text-xs">
-                      {e.user_id ?? <span className="text-white/20">—</span>}
+                    <td className="px-4 py-3 text-white/70 text-xs">
+                      {e.user_name
+                        ? e.user_name
+                        : e.user_id != null
+                        ? <span className="font-mono text-white/40">#{e.user_id}</span>
+                        : <span className="text-white/20">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-white/50 font-mono text-xs">
-                      {e.video_id ?? <span className="text-white/20">—</span>}
+                    <td className="px-4 py-3 text-xs">
+                      {e.video_title
+                        ? <span className="text-white/70 truncate max-w-[160px] block">{e.video_title}</span>
+                        : e.video_id != null
+                        ? <span className="font-mono text-white/40">#{e.video_id}</span>
+                        : <span className="text-white/20">—</span>}
                     </td>
                     <td className="px-4 py-3 text-xs">
                       {e.location ? (
