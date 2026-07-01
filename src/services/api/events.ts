@@ -44,6 +44,7 @@ export type EventsParams = {
   event_type?: EventType | "";
   user_id?: number | null;
   video_id?: number | null;
+  session_id?: string | null;
 };
 
 export const getEvents = async (params: EventsParams = {}): Promise<EventsResponse> => {
@@ -54,8 +55,26 @@ export const getEvents = async (params: EventsParams = {}): Promise<EventsRespon
   if (params.event_type) query.event_type = params.event_type;
   if (params.user_id != null) query.user_id = params.user_id;
   if (params.video_id != null) query.video_id = params.video_id;
+  if (params.session_id) query.session_id = params.session_id;
 
   const res = await axiosClient.get<EventsResponse>("/api/v1/events", { params: query });
+  return res.data;
+};
+
+export type AllEventsParams = Omit<EventsParams, "limit" | "offset">;
+
+/**
+ * Fetch every matching event with no pagination — for tracing a full session
+ * or exporting. Backend caps this at 10,000 rows.
+ */
+export const getAllEvents = async (params: AllEventsParams = {}): Promise<EventLog[]> => {
+  const query: Record<string, string> = {};
+  if (params.event_type) query.event_type = params.event_type;
+  if (params.user_id != null) query.user_id = String(params.user_id);
+  if (params.video_id != null) query.video_id = String(params.video_id);
+  if (params.session_id) query.session_id = params.session_id;
+
+  const res = await axiosClient.get<EventLog[]>("/api/v1/events/all", { params: query });
   return res.data;
 };
 

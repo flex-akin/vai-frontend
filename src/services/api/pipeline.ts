@@ -70,6 +70,7 @@ export type PipelineResponse = {
 export type PipelineOptions = {
   rewind_secs?: number;
   skip_secs?: number;
+  session_id?: string;
 };
 
 /**
@@ -86,6 +87,7 @@ export const callVideoPipeline = async (
   form.append("viewer_audio", viewerAudio);
   form.append("rewind_secs", String(opts.rewind_secs ?? 8));
   form.append("skip_secs", String(opts.skip_secs ?? 20));
+  if (opts.session_id) form.append("session_id", opts.session_id);
 
   console.log("Calling pipeline endpoint with:", {
     videoId,
