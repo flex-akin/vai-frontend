@@ -254,13 +254,15 @@ export default function AdminEvents() {
 
   const [selected, setSelected] = useState<EventLog | null>(null);
 
-  const [filterType,    setFilterType]    = useState<EventType | "">("");
-  const [filterUserId,  setFilterUserId]  = useState("");
-  const [filterVideoId, setFilterVideoId] = useState("");
+  const [filterType,      setFilterType]      = useState<EventType | "">("");
+  const [filterUserId,    setFilterUserId]    = useState("");
+  const [filterVideoId,   setFilterVideoId]   = useState("");
+  const [filterSessionId, setFilterSessionId] = useState("");
 
-  const [pendingType,    setPendingType]    = useState<EventType | "">("");
-  const [pendingUserId,  setPendingUserId]  = useState("");
-  const [pendingVideoId, setPendingVideoId] = useState("");
+  const [pendingType,      setPendingType]      = useState<EventType | "">("");
+  const [pendingUserId,    setPendingUserId]    = useState("");
+  const [pendingVideoId,   setPendingVideoId]   = useState("");
+  const [pendingSessionId, setPendingSessionId] = useState("");
 
   useEffect(() => {
     setLoading(true);
@@ -271,26 +273,34 @@ export default function AdminEvents() {
       event_type: filterType || undefined,
       user_id:  filterUserId  ? parseInt(filterUserId,  10) : undefined,
       video_id: filterVideoId ? parseInt(filterVideoId, 10) : undefined,
+      session_id: filterSessionId || undefined,
     })
       .then((res) => { setItems(res.items); setTotal(res.total); })
       .catch(()   => setError("Could not load events."))
       .finally(()  => setLoading(false));
-  }, [offset, filterType, filterUserId, filterVideoId]);
+  }, [offset, filterType, filterUserId, filterVideoId, filterSessionId]);
 
   function applyFilters() {
     setFilterType(pendingType);
     setFilterUserId(pendingUserId);
     setFilterVideoId(pendingVideoId);
+    setFilterSessionId(pendingSessionId);
     setOffset(0);
   }
 
   function clearFilters() {
-    setPendingType(""); setPendingUserId(""); setPendingVideoId("");
-    setFilterType(""); setFilterUserId(""); setFilterVideoId("");
+    setPendingType(""); setPendingUserId(""); setPendingVideoId(""); setPendingSessionId("");
+    setFilterType(""); setFilterUserId(""); setFilterVideoId(""); setFilterSessionId("");
     setOffset(0);
   }
 
-  const hasActiveFilters = filterType || filterUserId || filterVideoId;
+  function filterBySession(sessionId: string) {
+    setPendingSessionId(sessionId);
+    setFilterSessionId(sessionId);
+    setOffset(0);
+  }
+
+  const hasActiveFilters = filterType || filterUserId || filterVideoId || filterSessionId;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -350,6 +360,17 @@ export default function AdminEvents() {
               />
             </div>
 
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-white/40">Session ID</label>
+              <input
+                type="text"
+                placeholder="e.g. 1e5ac5fb-…"
+                value={pendingSessionId}
+                onChange={(e) => setPendingSessionId(e.target.value)}
+                className="rounded-lg border border-white/10 bg-black px-3 py-2 text-sm text-white placeholder-white/20 focus:outline-none focus:border-white/30 w-48 font-mono"
+              />
+            </div>
+
             <div className="flex gap-2 items-end pb-0.5">
               <button
                 onClick={applyFilters}
@@ -357,7 +378,7 @@ export default function AdminEvents() {
               >
                 Apply
               </button>
-              {(pendingType || pendingUserId || pendingVideoId || hasActiveFilters) && (
+              {(pendingType || pendingUserId || pendingVideoId || pendingSessionId || hasActiveFilters) && (
                 <button
                   onClick={clearFilters}
                   className="rounded-lg border border-white/10 px-4 py-2 text-sm text-white/60 hover:bg-white/10 hover:text-white transition"
@@ -370,9 +391,10 @@ export default function AdminEvents() {
 
           {hasActiveFilters && (
             <div className="mt-3 flex flex-wrap gap-2">
-              {filterType    && <span className="text-xs bg-white/10 rounded-full px-3 py-1 text-white/60">type: {filterType}</span>}
-              {filterUserId  && <span className="text-xs bg-white/10 rounded-full px-3 py-1 text-white/60">user: {filterUserId}</span>}
-              {filterVideoId && <span className="text-xs bg-white/10 rounded-full px-3 py-1 text-white/60">video: {filterVideoId}</span>}
+              {filterType      && <span className="text-xs bg-white/10 rounded-full px-3 py-1 text-white/60">type: {filterType}</span>}
+              {filterUserId    && <span className="text-xs bg-white/10 rounded-full px-3 py-1 text-white/60">user: {filterUserId}</span>}
+              {filterVideoId   && <span className="text-xs bg-white/10 rounded-full px-3 py-1 text-white/60">video: {filterVideoId}</span>}
+              {filterSessionId && <span className="text-xs bg-white/10 rounded-full px-3 py-1 text-white/60 font-mono">session: {filterSessionId}</span>}
             </div>
           )}
         </div>
@@ -401,6 +423,7 @@ export default function AdminEvents() {
                   <th className="px-4 py-3 whitespace-nowrap">Timestamp</th>
                   <th className="px-4 py-3">User</th>
                   <th className="px-4 py-3">Video</th>
+                  <th className="px-4 py-3">Session</th>
                   <th className="px-4 py-3">Location</th>
                 </tr>
               </thead>
@@ -433,6 +456,19 @@ export default function AdminEvents() {
                         : e.video_id != null
                         ? <span className="font-mono text-white/40">#{e.video_id}</span>
                         : <span className="text-white/20">—</span>}
+                    </td>
+                    <td className="px-4 py-3 text-xs">
+                      {e.session_id ? (
+                        <button
+                          onClick={(ev) => { ev.stopPropagation(); filterBySession(e.session_id!); }}
+                          title={`Filter by session ${e.session_id}`}
+                          className="font-mono text-white/40 hover:text-white hover:underline"
+                        >
+                          {e.session_id.slice(0, 8)}…
+                        </button>
+                      ) : (
+                        <span className="text-white/20">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-xs">
                       {e.location ? (

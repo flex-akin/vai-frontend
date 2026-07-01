@@ -617,7 +617,9 @@ export default function Watch(props: {
             "Calling pipeline with recorded audio and video ID:",
             routeVideoId,
           );
-          const pipelineRes = await callVideoPipeline(routeVideoId, e.file);
+          const pipelineRes = await callVideoPipeline(routeVideoId, e.file, {
+            session_id: getSessionId(),
+          });
           console.log("Pipeline response:", pipelineRes);
 
           setPipelineResult(pipelineRes);
