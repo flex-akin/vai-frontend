@@ -2,7 +2,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -104,14 +103,11 @@ const clearPersistedAuth = () => {
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<AuthUser | null>(null);
-
-  useEffect(() => {
-    const persisted = readPersistedAuth();
-    if (persisted?.user) {
-      setUser(persisted.user);
-    }
-  }, []);
+  // Hydrate synchronously so ProtectedRoute doesn't redirect on a page refresh
+  // before the persisted session has been read.
+  const [user, setUser] = useState<AuthUser | null>(
+    () => readPersistedAuth()?.user ?? null
+  );
 
   const signIn = useCallback(async (email: string, password: string) => {
     const response = await fetch(`${API_BASE_URL}/login`, {
