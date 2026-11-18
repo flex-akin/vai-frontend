@@ -18,6 +18,8 @@ import ProtectedRoute from "./ProtectedRoute";
 import AdminRoute from "./AdminRoute";
 import AdminFeedback from "../pages/AdminFeedback";
 import AdminEvents from "../pages/AdminEvents";
+import ForgotPassword from "../pages/ForgotPassword";
+import Account from "../pages/Account";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -54,6 +56,15 @@ const router = createBrowserRouter(
       />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route
+        path="/account"
+        element={
+          <ProtectedRoute>
+            <Account />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/watch" element={<WatchLayout />}>
         <Route index element={<Watch />} />
         <Route path=":videoId" element={<Watch />} />
